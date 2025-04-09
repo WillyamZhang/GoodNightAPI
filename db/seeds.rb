@@ -7,3 +7,12 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+User.destroy_all
+User.create!([
+  { name: "user1" },
+  { name: "user2" },
+  { name: "user3" },
+  { name: "user4" },
+  { name: "user5" }
+])
