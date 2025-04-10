@@ -7,7 +7,7 @@ class Api::V1::FollowsController < ApplicationController
     if follow.save
       render json: { message: "Follow successfully", followed: follow }, status: :created
     else
-      render json: { error: record.errors.full_messages }, status: :unprocessable_entity
+      render json: { error: follow.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
