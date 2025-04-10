@@ -10,7 +10,11 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :sleep_records, only: [:create, :update]
+      resources :sleep_records, only: [:create] do
+        collection do
+          patch :clock_out  # maps to PATCH /api/v1/sleep_records/clock_out
+        end
+      end
     end
   end
 end
