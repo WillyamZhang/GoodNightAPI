@@ -15,6 +15,11 @@ Rails.application.routes.draw do
           patch :clock_out  # maps to PATCH /api/v1/sleep_records/clock_out
         end
       end
+      resources :follows, only: [:create] do
+        collection do
+          delete :unfollow  # maps to DELETE /api/v1/follows/unfollow
+        end
+      end
     end
   end
 end
