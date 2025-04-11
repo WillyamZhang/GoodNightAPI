@@ -25,6 +25,18 @@ class Api::V1::SleepRecordsController < ApplicationController
     end
   end
 
+  def following_record
+    user = User.find_by(id: params[:user_id])
+    if user.nil?
+      render json: { error: "User not found" }, status: :not_found
+      return
+    end
+
+    records = SleepRecord.sleep_records_from_following(user.following_ids)
+
+    render json: { following_records: records.map { |r| { result: r.formatted_result } } }, status: :ok
+  end
+
   private
 
   def sleep_record_params

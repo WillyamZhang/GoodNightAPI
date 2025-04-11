@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       resources :sleep_records, only: [:create] do
         collection do
           patch :clock_out  # maps to PATCH /api/v1/sleep_records/clock_out
+          get :following_record  # maps to GET /api/v1/sleep_records/following_record
         end
       end
       resources :follows, only: [:create] do
