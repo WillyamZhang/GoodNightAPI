@@ -6,6 +6,13 @@ class Follow < ApplicationRecord
   validates :user_id, uniqueness: { scope: :followed_id, message: "already follows this user" }
   validate :cannot_follow_self
 
+  # Returns the lock record
+  def self.locked_record(params)
+    where(params).lock(true).first
+  end
+
+  private
+
   def cannot_follow_self
     errors.add(:followed_id, "can't follow your self") if user_id == followed_id
   end
