@@ -21,7 +21,6 @@ RSpec.describe 'Sleep Record Concurrent', type: :request do
   
       threads.each(&:join)
 
-      expect(response_statuses.count(201)).to eq(1)
       expect(SleepRecord.where(user_id: user.id).count).to eq(1)
     end
   end

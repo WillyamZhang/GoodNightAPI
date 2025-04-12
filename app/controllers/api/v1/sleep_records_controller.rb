@@ -1,32 +1,37 @@
 class Api::V1::SleepRecordsController < ApplicationController
-  before_action :find_latest_by_user, only: [:clock_out, :create]
+  before_action :set_user_id, only: [:create, :clock_out, :following_record]
 
   def create
-    record = SleepRecord.new(sleep_record_params)
-    record.clock_in = Time.current
-    if record.save
-      all_record = SleepRecord.all_record(record.user_id).select("id, user_id, clock_in")
-      render json: { message: "Clocked In successfully", records: all_record }, status: :created
-    else
-      render json: { error: record.errors.full_messages }, status: :unprocessable_entity
+    SleepRecord.transaction do
+      all_record = SleepRecord.all_record(@user_id).select("id, user_id, clock_in")
+      locked_record = SleepRecord.locked_active_for(@user_id)
+      return render_already_clocked_in(all_record) if locked_record
+
+      record = SleepRecord.new(sleep_record_params)
+      record.clock_in = Time.current
+      if record.save
+        render json: { message: "Clocked In successfully", records: all_record }, status: :created
+      else
+        render json: { error: record.errors.full_messages }, status: :unprocessable_entity
+      end
     end
-  end
+  end  
 
   def clock_out
-    if @latest_record.nil?
-      render json: { error: 'Sleep record not found' }, status: :not_found
-      return
-    end
-
-    if @latest_record.update(clock_out: Time.current)
-      render json: { message: "Clocked Out successfully", records: @latest_record }, status: :ok
-    else
-      render json: { errors: @latest_record.errors.full_messages }, status: :unprocessable_entity
+    SleepRecord.transaction do
+      locked_record = SleepRecord.locked_active_for(@user_id)
+      return render_sleep_not_found if locked_record.nil?
+  
+      if locked_record.update(clock_out: Time.current)
+        render json: { message: "Clocked Out successfully", records: locked_record }, status: :ok
+      else
+        render json: { errors: locked_record.errors.full_messages }, status: :unprocessable_entity
+      end
     end
   end
 
   def following_record
-    user = User.find_by(id: params[:user_id])
+    user = User.find_by(id: @user_id)
     if user.nil?
       render json: { error: "User not found" }, status: :not_found
       return
@@ -43,7 +48,15 @@ class Api::V1::SleepRecordsController < ApplicationController
     params.permit(:user_id)
   end
 
-  def find_latest_by_user
-    @latest_record = SleepRecord.active_for(params[:user_id])
+  def set_user_id
+    @user_id = params[:user_id]
+  end
+
+  def render_already_clocked_in(records)
+    render json: { message: "Already clocked in", records: records }, status: :ok
+  end
+  
+  def render_sleep_not_found
+    render json: { error: "Sleep record not found" }, status: :not_found
   end
 end
