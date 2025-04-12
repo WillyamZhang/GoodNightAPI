@@ -1,26 +1,30 @@
 class Api::V1::FollowsController < ApplicationController
-  before_action :find_unfollow_record, only: [:unfollow]
 
   def create
-    follow = Follow.new(follow_params)
+    Follow.transaction do
+      locked_record = Follow.locked_record(follow_params)
+      return render_already_follow if locked_record
 
-    if follow.save
-      render json: { message: "Follow successfully", followed: follow }, status: :created
-    else
-      render json: { error: follow.errors.full_messages }, status: :unprocessable_entity
+      follow = Follow.new(follow_params)
+
+      if follow.save
+        render json: { message: "Follow successfully", followed: follow }, status: :created
+      else
+        render json: { error: follow.errors.full_messages }, status: :unprocessable_entity
+      end
     end
   end
 
   def unfollow
-    if @unfollow_record.nil?
-      render json: { error: 'record not found' }, status: :not_found
-      return
-    end
-
-    if @unfollow_record.destroy
-      render json: { message: "UnFollow successfully", Unfollow: @unfollow_record }, status: :ok
-    else
-      render json: { error: @unfollow_record.errors.full_messages }, status: :unprocessable_entity
+    Follow.transaction do
+      locked_record = Follow.locked_record(follow_params)
+      return render_record_not_found if locked_record.nil?
+  
+      if locked_record.destroy
+        render json: { message: "Unfollowed successfully", unfollowed: locked_record }, status: :ok
+      else
+        render json: { error: locked_record.errors.full_messages }, status: :unprocessable_entity
+      end
     end
   end
 
@@ -30,7 +34,11 @@ class Api::V1::FollowsController < ApplicationController
     params.permit(:user_id, :followed_id)
   end
 
-  def find_unfollow_record
-    @unfollow_record = Follow.find_by(follow_params)
+  def render_already_follow(records)
+    render json: { message: "Already followed", followed: follow }, status: :ok
+  end
+
+  def render_record_not_found
+    render json: { error: 'record not found' }, status: :not_found
   end
 end
