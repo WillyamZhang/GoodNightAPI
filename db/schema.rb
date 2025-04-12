@@ -11,7 +11,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.0].define(version: 2025_04_10_084450) do
-  create_table "follows", force: :cascade do |t|
+  create_table "follows", charset: "utf8mb3", force: :cascade do |t|
     t.integer "user_id"
     t.integer "followed_id"
     t.datetime "created_at", null: false
@@ -20,7 +20,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_10_084450) do
     t.index ["user_id"], name: "index_follows_on_user_id"
   end
 
-  create_table "sleep_records", force: :cascade do |t|
+  create_table "sleep_records", charset: "utf8mb3", force: :cascade do |t|
     t.integer "user_id"
     t.datetime "clock_in"
     t.datetime "clock_out"
@@ -31,7 +31,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_10_084450) do
     t.index ["user_id"], name: "index_sleep_records_on_user_id"
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "users", charset: "utf8mb3", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
