@@ -1,10 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe 'Sleep Record Concurrent', type: :request do
-  let!(:user) { create(:user, name: "Test User") }
+  let!(:user) { create(:user) }
   let!(:record) { create(:sleep_record, user: user, clock_in: 1.hour.ago, clock_out: nil) }
-  let!(:friend1) { create(:user, name: "User A") }
-  let!(:friend2) { create(:user, name: "User B") }
+  let!(:friend1) { create(:user) }
+  let!(:friend2) { create(:user) }
 
   describe "Concurrent Clock-In" do
     it 'handles concurrent clock-in requests safely' do
