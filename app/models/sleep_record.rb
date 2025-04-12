@@ -10,9 +10,9 @@ class SleepRecord < ApplicationRecord
   # Filters records created within the last 7 days
   scope :from_last_week, -> { where('created_at >= ?', 1.week.ago) }
 
-  # Orders records by sleep duration in minutes (using SQLite's julianday function)
+  # Order by sleep duration (clock_out - clock_in)
   scope :order_by_sleep_duration, -> {
-    order(Arel.sql("(julianday(clock_out) - julianday(clock_in)) * 24 * 60"))
+    order(Arel.sql("TIMESTAMPDIFF(SECOND, clock_in, clock_out)"))
   }
 
   # Returns completed sleep records from users the current user follows
