@@ -20,7 +20,7 @@ RSpec.describe "Api::V1::FollowsController", type: :request do
       delete "/api/v1/follows/unfollow", params: { user_id: user.id, followed_id: followed.id }
 
       expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body)["message"]).to eq("UnFollow successfully")
+      expect(JSON.parse(response.body)["message"]).to eq("Unfollowed successfully")
     end
   end
 end
