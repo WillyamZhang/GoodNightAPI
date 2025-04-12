@@ -4,6 +4,8 @@ class SleepRecord < ApplicationRecord
   # validate when clock_out value is available
   validate :validate_clocked_out, if: -> { clock_out.present? }
 
+  validate :no_active_clock_in, on: :create
+
   # Filters records that have both clock_in and clock_out
   scope :with_complete_sleep, -> { where.not(clock_in: nil, clock_out: nil) }
 
@@ -52,5 +54,12 @@ class SleepRecord < ApplicationRecord
   def sleep_minutes
     return 0 unless clock_in && clock_out
     ((clock_out - clock_in) / 60.0).to_i
+  end
+
+  # Custom validation to ensure only 1 active clock in
+  def no_active_clock_in
+    if SleepRecord.exists?(user_id: user_id, clock_out: nil)
+      errors.add(:base, "Already clocked in")
+    end
   end
 end

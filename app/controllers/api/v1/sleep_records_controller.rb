@@ -2,7 +2,7 @@ class Api::V1::SleepRecordsController < ApplicationController
   before_action :find_latest_by_user, only: [:clock_out, :create]
 
   def create
-    record = @latest_record || SleepRecord.new(sleep_record_params)
+    record = SleepRecord.new(sleep_record_params)
     record.clock_in = Time.current
     if record.save
       all_record = SleepRecord.all_record(record.user_id).select("id, user_id, clock_in")
