@@ -231,6 +231,42 @@ This project includes tests to handle concurrent requests such as:
 - Multiple clock-in requests for the same user.
 - Multiple follow requests for the same user pair.
 
+### 🧪 Performance Testing
+
+#### Dataset:
+- **Users**: 50,000 users
+- **Sleep Records**: Each user has **3–5 records** → ~200,000 total records
+- **Follows**: Each user follows **2–10 other users**
+
+#### Indexed Query Optimization
+
+We optimized the query performance by adding the following indexes:
+
+```ruby
+add_index :follows, [:user_id, :followed_id], unique: true
+add_index :sleep_records, [:user_id, :clock_out]
+add_index :sleep_records, [:user_id, :created_at]
+```
+
+#### Sample Query Performance (Using `EXPLAIN` in MySQL)
+
+```sql
+SELECT `sleep_records`.* FROM `sleep_records`
+WHERE `sleep_records`.`user_id` IN (8102, 9098, 9961, 13194, 14533, 15731, 25597, 34689, 45804)
+AND NOT (`sleep_records`.`clock_in` IS NULL AND `sleep_records`.`clock_out` IS NULL)
+AND (created_at >= '2025-04-06 05:01:42.940510')
+ORDER BY TIMESTAMPDIFF(SECOND, clock_in, clock_out)
+```
+
+| Field     | Value                                                                 |
+|-----------|-----------------------------------------------------------------------|
+| type      | `range` – Efficient index usage for a range scan                     |
+| key       | `index_sleep_records_on_user_id_and_clock_out` – Index is being used |
+| rows      | `39` – Very few rows scanned                                          |
+| Extra     | `Using index condition; Using where; Using MRR`                       |
+
+**Result**: Query uses the appropriate composite index, scans a small number of rows efficiently, and performs very well even with over 200,000 records in the table.
+
 ## Known Issues
 
 - Concurrency issues related to race conditions can occur if transactions are not handled correctly.
