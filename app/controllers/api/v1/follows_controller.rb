@@ -3,7 +3,7 @@ class Api::V1::FollowsController < ApplicationController
   def create
     Follow.transaction do
       locked_record = Follow.locked_record(follow_params)
-      return render_already_follow if locked_record
+      return render_already_follow(locked_record) if locked_record
 
       follow = Follow.new(follow_params)
 
@@ -35,7 +35,7 @@ class Api::V1::FollowsController < ApplicationController
   end
 
   def render_already_follow(records)
-    render json: { message: "Already followed", followed: follow }, status: :ok
+    render json: { message: "Already followed", followed: records }, status: :ok
   end
 
   def render_record_not_found
